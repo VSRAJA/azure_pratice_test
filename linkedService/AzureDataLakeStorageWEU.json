@@ -1,0 +1,19 @@
+{
+	"name": "AzureDataLakeStorageWEU",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "AzureBlobFS",
+		"typeProperties": {
+			"url": "https://avtnprweubdadls.dfs.core.windows.net",
+			"accountKey": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "AzureKeyVaultWEU",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": "ADLSGen2WEUSecret"
+			}
+		}
+	}
+}

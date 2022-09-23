@@ -1,0 +1,188 @@
+{
+	"name": "EMEA_Billing_load",
+	"properties": {
+		"activities": [
+			{
+				"name": "EMEA billing  FTP file transfer",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "BinarySource",
+						"storeSettings": {
+							"type": "FtpReadSettings",
+							"recursive": false,
+							"useBinaryTransfer": true,
+							"deleteFilesAfterCompletion": false,
+							"disableChunking": false
+						},
+						"formatSettings": {
+							"type": "BinaryReadSettings"
+						}
+					},
+					"sink": {
+						"type": "BinarySink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						}
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "BW_FTP_binary_file_with_parameter",
+						"type": "DatasetReference",
+						"parameters": {
+							"BW_FTP_file_path": "PCH_OPENHUB/DATALAKE",
+							"BW_FTP_file_name": "EEBILL_AZ.csv"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DL_EU_binary_file_with_parameter",
+						"type": "DatasetReference",
+						"parameters": {
+							"DL_File_container": "bkbl",
+							"DL_File_path": "staging/bill24/EMEA/Transaction/Billing/Delta",
+							"DL_File_name": "EEBILL_AZ.csv"
+						}
+					}
+				]
+			},
+			{
+				"name": "EMEA billing DeltaLake bronze",
+				"type": "DatabricksNotebook",
+				"dependsOn": [
+					{
+						"activity": "EMEA billing  FTP file transfer",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebookPath": "/Repos/AnalyticsEngine/AmerBCS-AnalyticsEngine/src/com/avnet/bda/bkbl/ELT/Bill024_EMEA_Billing_Bronze_Delta"
+				},
+				"linkedServiceName": {
+					"referenceName": "AzureDatabricksWEU",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "EMEA billing DeltaLake silver",
+				"type": "DatabricksNotebook",
+				"dependsOn": [
+					{
+						"activity": "EMEA billing DeltaLake bronze",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebookPath": "/Repos/AnalyticsEngine/AmerBCS-AnalyticsEngine/src/com/avnet/bda/bkbl/ELT/Bill024_EMEA_Billing_Silver_Delta"
+				},
+				"linkedServiceName": {
+					"referenceName": "AzureDatabricksWEU",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "EMEA billing file archive",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "EMEA billing DeltaLake silver",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "BinarySource",
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": false,
+							"deleteFilesAfterCompletion": true
+						},
+						"formatSettings": {
+							"type": "BinaryReadSettings"
+						}
+					},
+					"sink": {
+						"type": "BinarySink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						}
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "DL_EU_binary_file_with_parameter",
+						"type": "DatasetReference",
+						"parameters": {
+							"DL_File_container": "bkbl",
+							"DL_File_path": "staging/bill24/EMEA/Transaction/Billing/Delta",
+							"DL_File_name": "EEBILL_AZ.csv"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DL_EU_binary_file_with_parameter",
+						"type": "DatasetReference",
+						"parameters": {
+							"DL_File_container": "bkbl",
+							"DL_File_path": "staging/bill24/EMEA/Transaction/Billing/Archive",
+							"DL_File_name": {
+								"value": "@concat('EEBILL_AZ_',formatDateTime(utcnow(),'yyyy-MM-dd HH:mm'), '.csv')",
+								"type": "Expression"
+							}
+						}
+					}
+				]
+			}
+		],
+		"folder": {
+			"name": "BKBL"
+		},
+		"annotations": [],
+		"lastPublishTime": "2022-06-04T04:19:11Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

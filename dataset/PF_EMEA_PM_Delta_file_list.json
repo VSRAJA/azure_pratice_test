@@ -1,0 +1,26 @@
+{
+	"name": "PF_EMEA_PM_Delta_file_list",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureDataLakeStorageWEU",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "PF_EMEA_Inventory"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": "staging/inventory/PF_EMEA/Meta/PM.csv",
+				"fileSystem": "inventory"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"quoteChar": "\""
+		},
+		"schema": []
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

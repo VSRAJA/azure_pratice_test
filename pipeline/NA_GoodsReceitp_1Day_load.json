@@ -1,0 +1,187 @@
+{
+	"name": "NA_GoodsReceitp_1Day_load",
+	"properties": {
+		"activities": [
+			{
+				"name": "Copy ZNAGRRP01_Day1_append",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "BinarySource",
+						"storeSettings": {
+							"type": "FtpReadSettings",
+							"recursive": true,
+							"useBinaryTransfer": true,
+							"disableChunking": false
+						},
+						"formatSettings": {
+							"type": "BinaryReadSettings"
+						}
+					},
+					"sink": {
+						"type": "BinarySink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						}
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "BW_FTP_binary_file_with_parameter",
+						"type": "DatasetReference",
+						"parameters": {
+							"BW_FTP_file_path": "PCH_OPENHUB/DATALAKE",
+							"BW_FTP_file_name": "ZNAGRRP01_Day1.csv"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DL_binary_file_with_parameter",
+						"type": "DatasetReference",
+						"parameters": {
+							"DL_File_container": "purchase",
+							"DL_File_path": "staging/GoodsReceipt/NA/Transaction/incremental/Append",
+							"DL_File_name": {
+								"value": "@concat('ZNAGRRP01_Day1',string(utcnow()),'.csv')",
+								"type": "Expression"
+							}
+						}
+					}
+				]
+			},
+			{
+				"name": "Copy ZNAGRRP01_Day9_to_deleteAppend",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "BinarySource",
+						"storeSettings": {
+							"type": "FtpReadSettings",
+							"recursive": true,
+							"useBinaryTransfer": true,
+							"disableChunking": false
+						},
+						"formatSettings": {
+							"type": "BinaryReadSettings"
+						}
+					},
+					"sink": {
+						"type": "BinarySink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						}
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "BW_FTP_binary_file_with_parameter",
+						"type": "DatasetReference",
+						"parameters": {
+							"BW_FTP_file_path": "PCH_OPENHUB/DATALAKE",
+							"BW_FTP_file_name": "ZNAGRRP01_Day9.csv"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DL_binary_file_with_parameter",
+						"type": "DatasetReference",
+						"parameters": {
+							"DL_File_container": "purchase",
+							"DL_File_path": "staging/GoodsReceipt/NA/Transaction/incremental/DeleteAppend",
+							"DL_File_name": {
+								"value": "@concat('ZNAGRRP01_Day9',string(utcnow()),'.csv')",
+								"type": "Expression"
+							}
+						}
+					}
+				]
+			},
+			{
+				"name": "Copy ZNAGRRP01_Day9 to filterappend",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "BinarySource",
+						"storeSettings": {
+							"type": "FtpReadSettings",
+							"recursive": true,
+							"useBinaryTransfer": true,
+							"disableChunking": false
+						},
+						"formatSettings": {
+							"type": "BinaryReadSettings"
+						}
+					},
+					"sink": {
+						"type": "BinarySink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						}
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "BW_FTP_binary_file_with_parameter",
+						"type": "DatasetReference",
+						"parameters": {
+							"BW_FTP_file_path": "PCH_OPENHUB/DATALAKE",
+							"BW_FTP_file_name": "ZNAGRRP01_Day9.csv"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DL_binary_file_with_parameter",
+						"type": "DatasetReference",
+						"parameters": {
+							"DL_File_container": "purchase",
+							"DL_File_path": "staging/GoodsReceipt/NA/Transaction/incremental/FilterAppend",
+							"DL_File_name": {
+								"value": "@concat('ZNAGRRP01_Day9',string(utcnow()),'.csv')",
+								"type": "Expression"
+							}
+						}
+					}
+				]
+			}
+		],
+		"folder": {
+			"name": "Purchase/GoodsReceipt"
+		},
+		"annotations": [],
+		"lastPublishTime": "2022-08-03T01:53:31Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

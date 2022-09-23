@@ -1,0 +1,25 @@
+{
+	"name": "NA_Inventory_Trigger",
+	"properties": {
+		"annotations": [],
+		"runtimeState": "Stopped",
+		"pipelines": [
+			{
+				"pipelineReference": {
+					"referenceName": "NA_Inventory_load",
+					"type": "PipelineReference"
+				}
+			}
+		],
+		"type": "ScheduleTrigger",
+		"typeProperties": {
+			"recurrence": {
+				"frequency": "Day",
+				"interval": 1,
+				"startTime": "2022-04-28T00:41:00Z",
+				"endTime": "2022-04-28T01:19:21Z",
+				"timeZone": "UTC"
+			}
+		}
+	}
+}

@@ -1,0 +1,349 @@
+{
+	"name": "PF_APAC_CustomerShipTo_load",
+	"properties": {
+		"activities": [
+			{
+				"name": "pf_apac_source_file_name",
+				"type": "GetMetadata",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "PF_APAC_source_file_folder",
+						"type": "DatasetReference"
+					},
+					"fieldList": [
+						"childItems"
+					],
+					"storeSettings": {
+						"type": "FileServerReadSettings",
+						"recursive": true,
+						"enablePartitionDiscovery": false
+					},
+					"formatSettings": {
+						"type": "BinaryReadSettings"
+					}
+				}
+			},
+			{
+				"name": "PF_APAC_CustomerShipTo_Daily_Delta_FileList_Preprocess",
+				"type": "DatabricksNotebook",
+				"dependsOn": [
+					{
+						"activity": "pf_apac_source_file_name",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebookPath": "/Repos/AnalyticsEngine/AmerBCS-AnalyticsEngine/src/com/avnet/bda/bkbl/ELT/PF_APAC_CustomerShipTo_Daily_Delta_FileList_Preprocess",
+					"baseParameters": {
+						"FILE_NAME": {
+							"value": "@string(activity('pf_apac_source_file_name').output.childItems)",
+							"type": "Expression"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "AzureDatabricksWUS2",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "Lookup CustomerShipTo",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "PF_APAC_CustomerShipTo_Daily_Delta_FileList_Preprocess",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": true,
+							"wildcardFileName": "part-*",
+							"enablePartitionDiscovery": true,
+							"partitionRootPath": "bkbl/staging/bill24/PF_APAC/Meta/CustomerShipTo.csv"
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"dataset": {
+						"referenceName": "PF_APAC_CustomerShipTo_Delta_file_list",
+						"type": "DatasetReference"
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "ForEach CustomerShipTo",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Lookup CustomerShipTo",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('Lookup CustomerShipTo').output.value",
+						"type": "Expression"
+					},
+					"isSequential": true,
+					"activities": [
+						{
+							"name": "Copy CustomerShipTo",
+							"type": "Copy",
+							"dependsOn": [
+								{
+									"activity": "Delete Delta folder files",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "BinarySource",
+									"storeSettings": {
+										"type": "FileServerReadSettings",
+										"recursive": true,
+										"wildcardFileName": {
+											"value": "@{item().Prop_0}",
+											"type": "Expression"
+										},
+										"deleteFilesAfterCompletion": false
+									},
+									"formatSettings": {
+										"type": "BinaryReadSettings"
+									}
+								},
+								"sink": {
+									"type": "BinarySink",
+									"storeSettings": {
+										"type": "AzureBlobFSWriteSettings"
+									}
+								},
+								"enableStaging": false
+							},
+							"inputs": [
+								{
+									"referenceName": "PF_APAC_source_file_folder",
+									"type": "DatasetReference"
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "PF_APAC_Target_file_folder",
+									"type": "DatasetReference",
+									"parameters": {
+										"DL_File_container": "bkbl",
+										"DL_File_path": "staging/bill24/PF_APAC/Master/CustomerShipTo/Delta"
+									}
+								}
+							]
+						},
+						{
+							"name": "Bill024_PF_APAC_CustomerShipTo_Bronze_Delta",
+							"type": "DatabricksNotebook",
+							"dependsOn": [
+								{
+									"activity": "Copy CustomerShipTo",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"notebookPath": "/Repos/AnalyticsEngine/AmerBCS-AnalyticsEngine/src/com/avnet/bda/bkbl/ELT/Bill024_PF_APAC_CustomerShipTo_Bronze_Delta"
+							},
+							"linkedServiceName": {
+								"referenceName": "AzureDatabricksWUS2",
+								"type": "LinkedServiceReference"
+							}
+						},
+						{
+							"name": "Bill024_PF_APAC_CustomerShipTo_Silver_Delta",
+							"type": "DatabricksNotebook",
+							"dependsOn": [
+								{
+									"activity": "Bill024_PF_APAC_CustomerShipTo_Bronze_Delta",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"notebookPath": "/Repos/AnalyticsEngine/AmerBCS-AnalyticsEngine/src/com/avnet/bda/bkbl/ELT/Bill024_PF_APAC_CustomerShipTo_Silver_Delta"
+							},
+							"linkedServiceName": {
+								"referenceName": "AzureDatabricksWUS2",
+								"type": "LinkedServiceReference"
+							}
+						},
+						{
+							"name": "Move to CustomerShipTo Archive",
+							"type": "Copy",
+							"dependsOn": [
+								{
+									"activity": "Bill024_PF_APAC_CustomerShipTo_Silver_Delta",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "BinarySource",
+									"storeSettings": {
+										"type": "AzureBlobFSReadSettings",
+										"recursive": true,
+										"deleteFilesAfterCompletion": true
+									},
+									"formatSettings": {
+										"type": "BinaryReadSettings"
+									}
+								},
+								"sink": {
+									"type": "BinarySink",
+									"storeSettings": {
+										"type": "AzureBlobFSWriteSettings"
+									}
+								},
+								"enableStaging": false
+							},
+							"inputs": [
+								{
+									"referenceName": "DL_binary_file_with_parameter",
+									"type": "DatasetReference",
+									"parameters": {
+										"DL_File_container": "bkbl",
+										"DL_File_path": "staging/bill24/PF_APAC/Master/CustomerShipTo/Delta",
+										"DL_File_name": {
+											"value": "@{item().Prop_0}",
+											"type": "Expression"
+										}
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "DL_binary_file_with_parameter",
+									"type": "DatasetReference",
+									"parameters": {
+										"DL_File_container": "bkbl",
+										"DL_File_path": "staging/bill24/PF_APAC/Master/CustomerShipTo/Archive",
+										"DL_File_name": {
+											"value": "@concat(item().Prop_0,'^',formatDateTime(utcnow(),'yyyy-MM-dd HH:mm'))",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						},
+						{
+							"name": "Delete Delta folder files",
+							"type": "Delete",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"dataset": {
+									"referenceName": "PF_APAC_Target_file_folder",
+									"type": "DatasetReference",
+									"parameters": {
+										"DL_File_container": "bkbl",
+										"DL_File_path": "staging/bill24/PF_APAC/Master/CustomerShipTo/Delta"
+									}
+								},
+								"enableLogging": false,
+								"storeSettings": {
+									"type": "AzureBlobFSReadSettings",
+									"recursive": true,
+									"enablePartitionDiscovery": false
+								}
+							}
+						}
+					]
+				}
+			}
+		],
+		"folder": {
+			"name": "BKBL/PF_APAC"
+		},
+		"annotations": [],
+		"lastPublishTime": "2022-06-27T07:14:39Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

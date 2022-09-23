@@ -1,0 +1,20 @@
+{
+	"name": "AzureDataLakeStorageWUS2",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"description": "ADLS GEN2 west us2 region",
+		"annotations": [],
+		"type": "AzureBlobFS",
+		"typeProperties": {
+			"url": "https://avtnprwus2bdadls.dfs.core.windows.net",
+			"accountKey": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "AzureKeyVaultWUS2",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": "ADLSGen2BKBLSecret"
+			}
+		}
+	}
+}

@@ -1,0 +1,68 @@
+{
+	"name": "PF_APAC_Delta_Initial",
+	"properties": {
+		"activities": [
+			{
+				"name": "Adhoc - Move Initial Delta Products to Archive",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "BinarySource",
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": true,
+							"deleteFilesAfterCompletion": true
+						},
+						"formatSettings": {
+							"type": "BinaryReadSettings"
+						}
+					},
+					"sink": {
+						"type": "BinarySink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						}
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "DL_binary_file_with_parameter",
+						"type": "DatasetReference",
+						"parameters": {
+							"DL_File_container": "xxx",
+							"DL_File_path": "xxx",
+							"DL_File_name": "xxxx"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DL_binary_file_with_parameter",
+						"type": "DatasetReference",
+						"parameters": {
+							"DL_File_container": "xxx",
+							"DL_File_path": "xxx",
+							"DL_File_name": "xxx"
+						}
+					}
+				]
+			}
+		],
+		"folder": {
+			"name": "Inventory/PF_APAC"
+		},
+		"annotations": [],
+		"lastPublishTime": "2022-06-22T09:32:52Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

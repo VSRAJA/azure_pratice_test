@@ -1,0 +1,106 @@
+{
+	"name": "Adhoc_BW_File_to_EU_DL_Transfer",
+	"properties": {
+		"activities": [
+			{
+				"name": "Copy file from BW FTP to DataLake",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "BinarySource",
+						"storeSettings": {
+							"type": "FtpReadSettings",
+							"recursive": false,
+							"useBinaryTransfer": true,
+							"deleteFilesAfterCompletion": false,
+							"disableChunking": false
+						},
+						"formatSettings": {
+							"type": "BinaryReadSettings"
+						}
+					},
+					"sink": {
+						"type": "BinarySink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						}
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "BW_FTP_binary_file_with_parameter",
+						"type": "DatasetReference",
+						"parameters": {
+							"BW_FTP_file_path": {
+								"value": "@pipeline().parameters.BW_FTP_file_path",
+								"type": "Expression"
+							},
+							"BW_FTP_file_name": {
+								"value": "@pipeline().parameters.BW_FTP_file_name",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DL_EU_binary_file_with_parameter",
+						"type": "DatasetReference",
+						"parameters": {
+							"DL_File_container": {
+								"value": "@pipeline().parameters.DL_File_container",
+								"type": "Expression"
+							},
+							"DL_File_path": {
+								"value": "@pipeline().parameters.DL_File_path",
+								"type": "Expression"
+							},
+							"DL_File_name": {
+								"value": "@pipeline().parameters.DL_File_name",
+								"type": "Expression"
+							}
+						}
+					}
+				]
+			}
+		],
+		"parameters": {
+			"BW_FTP_file_path": {
+				"type": "string",
+				"defaultValue": "xCH_OPENHUB/DATALAKE"
+			},
+			"BW_FTP_file_name": {
+				"type": "string",
+				"defaultValue": "xxx.csv"
+			},
+			"DL_File_container": {
+				"type": "string",
+				"defaultValue": "xxx"
+			},
+			"DL_File_path": {
+				"type": "string",
+				"defaultValue": "xxx"
+			},
+			"DL_File_name": {
+				"type": "string",
+				"defaultValue": "xxx.csv"
+			}
+		},
+		"folder": {
+			"name": "GlobalParameterPipeline"
+		},
+		"annotations": [],
+		"lastPublishTime": "2022-06-01T07:22:10Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

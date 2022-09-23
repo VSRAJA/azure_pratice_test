@@ -1,0 +1,32 @@
+{
+	"name": "PF_NA_Inventory_Daily_Pipe_Trigger",
+	"properties": {
+		"annotations": [],
+		"runtimeState": "Started",
+		"pipelines": [
+			{
+				"pipelineReference": {
+					"referenceName": "Daily_PF_NA_Inventory_data_load",
+					"type": "PipelineReference"
+				}
+			}
+		],
+		"type": "ScheduleTrigger",
+		"typeProperties": {
+			"recurrence": {
+				"frequency": "Day",
+				"interval": 1,
+				"startTime": "2022-07-05T23:50:00",
+				"timeZone": "China Standard Time",
+				"schedule": {
+					"minutes": [
+						50
+					],
+					"hours": [
+						23
+					]
+				}
+			}
+		}
+	}
+}

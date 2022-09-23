@@ -1,0 +1,26 @@
+{
+	"name": "Daily_ASIA_Inventory_data_load",
+	"properties": {
+		"activities": [
+			{
+				"name": "Execute Inventory load pipeline",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "Asia_Inventory_load",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			}
+		],
+		"folder": {
+			"name": "Inventory"
+		},
+		"annotations": [],
+		"lastPublishTime": "2022-06-07T09:29:23Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

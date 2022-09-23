@@ -1,0 +1,17 @@
+{
+	"name": "PF_NA_Inventory_Daily_Trigger",
+	"properties": {
+		"annotations": [],
+		"runtimeState": "Stopped",
+		"pipelines": [],
+		"type": "ScheduleTrigger",
+		"typeProperties": {
+			"recurrence": {
+				"frequency": "Day",
+				"interval": 1,
+				"startTime": "2022-06-30T00:12:00Z",
+				"timeZone": "UTC"
+			}
+		}
+	}
+}

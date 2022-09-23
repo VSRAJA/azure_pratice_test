@@ -1,0 +1,28 @@
+{
+	"name": "NA_Material_ADLS",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureDataLakeStorageWUS2",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "NA_Master"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": "NO_COST_REPORT_TABLE.csv",
+				"folderPath": "staging/materialavp50/Delta",
+				"fileSystem": "bkbl"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": []
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

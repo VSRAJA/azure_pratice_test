@@ -1,0 +1,78 @@
+{
+	"name": "Daily_PF_EMEA_Inventory_data_load",
+	"properties": {
+		"activities": [
+			{
+				"name": "PF_EMEA_Products_load",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "PF_EMEA_Products_load",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "PF_EMEA_PM_load",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "PF_EMEA_PM_load",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "PF_EMEA_ExchangeRate2_load",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "PF_EMEA_ExchangeRate2_load",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "PF_EMEA_Brands_load",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "PF_EMEA_Brands_load",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "PF_EMEA_Inventory_load",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "PF_EMEA_Inventory_load",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			}
+		],
+		"folder": {
+			"name": "Inventory/PF_EMEA"
+		},
+		"annotations": [],
+		"lastPublishTime": "2022-06-21T09:16:31Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

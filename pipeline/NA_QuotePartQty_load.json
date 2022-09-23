@@ -1,0 +1,188 @@
+{
+	"name": "NA_QuotePartQty_load",
+	"properties": {
+		"activities": [
+			{
+				"name": "Copy Quote PartQty file from BW FTP to DataLake",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "BinarySource",
+						"storeSettings": {
+							"type": "FtpReadSettings",
+							"recursive": false,
+							"useBinaryTransfer": true,
+							"deleteFilesAfterCompletion": false,
+							"disableChunking": false
+						},
+						"formatSettings": {
+							"type": "BinaryReadSettings"
+						}
+					},
+					"sink": {
+						"type": "BinarySink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						}
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "BW_FTP_binary_file_with_parameter",
+						"type": "DatasetReference",
+						"parameters": {
+							"BW_FTP_file_path": "PCH_OPENHUB/DATALAKE",
+							"BW_FTP_file_name": "ENQUIO04_AZ.csv"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DL_binary_file_with_parameter",
+						"type": "DatasetReference",
+						"parameters": {
+							"DL_File_container": "quote",
+							"DL_File_path": "staging/quote/NA/Transaction/QuotePartQty/Delta",
+							"DL_File_name": "ENQUIO04_AZ.csv"
+						}
+					}
+				]
+			},
+			{
+				"name": "Load Quote PartQty data into DeltaLake Silver Layer",
+				"type": "DatabricksNotebook",
+				"dependsOn": [
+					{
+						"activity": "Load Quote PartQty data into DeltaLake Bronze Layer",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebookPath": "/Repos/AnalyticsEngine/AmerBCS-AnalyticsEngine/src/com/avnet/bda/quote/ELT/quote_NA_QuotePartQty_Silver_Delta"
+				},
+				"linkedServiceName": {
+					"referenceName": "AzureDatabricksWUS2",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "Copy Quote PartQty file to archive",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "Load Quote PartQty data into DeltaLake Silver Layer",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "BinarySource",
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": false,
+							"deleteFilesAfterCompletion": true
+						},
+						"formatSettings": {
+							"type": "BinaryReadSettings"
+						}
+					},
+					"sink": {
+						"type": "BinarySink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						}
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "DL_binary_file_with_parameter",
+						"type": "DatasetReference",
+						"parameters": {
+							"DL_File_container": "quote",
+							"DL_File_path": "staging/quote/NA/Transaction/QuotePartQty/Delta",
+							"DL_File_name": "ENQUIO04_AZ.csv"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DL_binary_file_with_parameter",
+						"type": "DatasetReference",
+						"parameters": {
+							"DL_File_container": "quote",
+							"DL_File_path": "staging/quote/NA/Transaction/QuotePartQty/Archive",
+							"DL_File_name": {
+								"value": "@concat('ENQUIO04_AZ_',formatDateTime(utcnow(),'yyyy-MM-dd HH:mm'), '.csv')",
+								"type": "Expression"
+							}
+						}
+					}
+				]
+			},
+			{
+				"name": "Load Quote PartQty data into DeltaLake Bronze Layer",
+				"type": "DatabricksNotebook",
+				"dependsOn": [
+					{
+						"activity": "Copy Quote PartQty file from BW FTP to DataLake",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebookPath": "/Repos/AnalyticsEngine/AmerBCS-AnalyticsEngine/src/com/avnet/bda/quote/ELT/quote_NA_QuotePartQty_Bronze_Delta"
+				},
+				"linkedServiceName": {
+					"referenceName": "AzureDatabricksWUS2",
+					"type": "LinkedServiceReference"
+				}
+			}
+		],
+		"folder": {
+			"name": "Quote"
+		},
+		"annotations": [],
+		"lastPublishTime": "2022-07-29T01:22:28Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

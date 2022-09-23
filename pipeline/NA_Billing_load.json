@@ -1,0 +1,315 @@
+{
+	"name": "NA_Billing_load",
+	"properties": {
+		"activities": [
+			{
+				"name": "Copy billing file 1 from BW FTP to DataLake",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "BinarySource",
+						"storeSettings": {
+							"type": "FtpReadSettings",
+							"recursive": false,
+							"useBinaryTransfer": true,
+							"deleteFilesAfterCompletion": false,
+							"disableChunking": false
+						},
+						"formatSettings": {
+							"type": "BinaryReadSettings"
+						}
+					},
+					"sink": {
+						"type": "BinarySink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						}
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "BW_FTP_binary_file_with_parameter",
+						"type": "DatasetReference",
+						"parameters": {
+							"BW_FTP_file_path": "PCH_OPENHUB/DATALAKE",
+							"BW_FTP_file_name": "ENBILL_AZ.csv"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DL_binary_file_with_parameter",
+						"type": "DatasetReference",
+						"parameters": {
+							"DL_File_container": "bkbl",
+							"DL_File_path": "staging/bill24/NA/Transaction/Delta",
+							"DL_File_name": "ENBILL_AZ.csv"
+						}
+					}
+				]
+			},
+			{
+				"name": "Load billing data into DeltaLake Silver Layer",
+				"type": "DatabricksNotebook",
+				"dependsOn": [
+					{
+						"activity": "Load billing data into DeltaLake Bronze Layer",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebookPath": "/Repos/AnalyticsEngine/AmerBCS-AnalyticsEngine/src/com/avnet/bda/bkbl/ELT/Bill024_NA_Billing_Silver_Delta"
+				},
+				"linkedServiceName": {
+					"referenceName": "AzureDatabricksWUS2",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "Copy billing file 1 to archive",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "Load billing data into DeltaLake Silver Layer",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "BinarySource",
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": false,
+							"deleteFilesAfterCompletion": true
+						},
+						"formatSettings": {
+							"type": "BinaryReadSettings"
+						}
+					},
+					"sink": {
+						"type": "BinarySink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						}
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "DL_binary_file_with_parameter",
+						"type": "DatasetReference",
+						"parameters": {
+							"DL_File_container": "bkbl",
+							"DL_File_path": "staging/bill24/NA/Transaction/Delta",
+							"DL_File_name": "ENBILL_AZ.csv"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DL_binary_file_with_parameter",
+						"type": "DatasetReference",
+						"parameters": {
+							"DL_File_container": "bkbl",
+							"DL_File_path": "staging/bill24/NA/Transaction/Archive",
+							"DL_File_name": {
+								"value": "@concat('ENBILL_AZ_',formatDateTime(utcnow(),'yyyy-MM-dd HH:mm'), '.csv')",
+								"type": "Expression"
+							}
+						}
+					}
+				]
+			},
+			{
+				"name": "Copy billing file 2 from BW FTP to DataLake",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "BinarySource",
+						"storeSettings": {
+							"type": "FtpReadSettings",
+							"recursive": false,
+							"useBinaryTransfer": true,
+							"deleteFilesAfterCompletion": false,
+							"disableChunking": false
+						},
+						"formatSettings": {
+							"type": "BinaryReadSettings"
+						}
+					},
+					"sink": {
+						"type": "BinarySink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						}
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "BW_FTP_binary_file_with_parameter",
+						"type": "DatasetReference",
+						"parameters": {
+							"BW_FTP_file_path": "PCH_OPENHUB/DATALAKE",
+							"BW_FTP_file_name": "ENBIL2_AZ.csv"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DL_binary_file_with_parameter",
+						"type": "DatasetReference",
+						"parameters": {
+							"DL_File_container": "bkbl",
+							"DL_File_path": "staging/bill24/NA/Transaction/Delta",
+							"DL_File_name": "ENBIL2_AZ.csv"
+						}
+					}
+				]
+			},
+			{
+				"name": "Copy billing file 2 to archive",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "Load billing data into DeltaLake Silver Layer",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "BinarySource",
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": false,
+							"deleteFilesAfterCompletion": true
+						},
+						"formatSettings": {
+							"type": "BinaryReadSettings"
+						}
+					},
+					"sink": {
+						"type": "BinarySink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						}
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "DL_binary_file_with_parameter",
+						"type": "DatasetReference",
+						"parameters": {
+							"DL_File_container": "bkbl",
+							"DL_File_path": "staging/bill24/NA/Transaction/Delta",
+							"DL_File_name": "ENBIL2_AZ.csv"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DL_binary_file_with_parameter",
+						"type": "DatasetReference",
+						"parameters": {
+							"DL_File_container": "bkbl",
+							"DL_File_path": "staging/bill24/NA/Transaction/Archive",
+							"DL_File_name": {
+								"value": "@concat('ENBIL2_AZ_',formatDateTime(utcnow(),'yyyy-MM-dd HH:mm'), '.csv')",
+								"type": "Expression"
+							}
+						}
+					}
+				]
+			},
+			{
+				"name": "Load billing data into DeltaLake Bronze Layer",
+				"type": "DatabricksNotebook",
+				"dependsOn": [
+					{
+						"activity": "Copy billing file 1 from BW FTP to DataLake",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Copy billing file 2 from BW FTP to DataLake",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebookPath": "/Repos/AnalyticsEngine/AmerBCS-AnalyticsEngine/src/com/avnet/bda/bkbl/ELT/Bill024_NA_Billing_Bronze_Delta"
+				},
+				"linkedServiceName": {
+					"referenceName": "AzureDatabricksWUS2",
+					"type": "LinkedServiceReference"
+				}
+			}
+		],
+		"folder": {
+			"name": "BKBL"
+		},
+		"annotations": [],
+		"lastPublishTime": "2022-06-01T04:30:32Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

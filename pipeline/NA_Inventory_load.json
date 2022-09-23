@@ -1,0 +1,188 @@
+{
+	"name": "NA_Inventory_load",
+	"properties": {
+		"activities": [
+			{
+				"name": "Copy Inventory file from BW FTP to DataLake",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "BinarySource",
+						"storeSettings": {
+							"type": "FtpReadSettings",
+							"recursive": false,
+							"useBinaryTransfer": true,
+							"deleteFilesAfterCompletion": false,
+							"disableChunking": false
+						},
+						"formatSettings": {
+							"type": "BinaryReadSettings"
+						}
+					},
+					"sink": {
+						"type": "BinarySink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						}
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "BW_FTP_binary_file_with_parameter",
+						"type": "DatasetReference",
+						"parameters": {
+							"BW_FTP_file_path": "PCH_OPENHUB/DATALAKE",
+							"BW_FTP_file_name": "ENINV_AZ.csv"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DL_binary_file_with_parameter",
+						"type": "DatasetReference",
+						"parameters": {
+							"DL_File_container": "inventory",
+							"DL_File_path": "staging/inventory/NA/Transaction/Delta",
+							"DL_File_name": "ENINV_AZ.csv"
+						}
+					}
+				]
+			},
+			{
+				"name": "Load Inventory data into DeltaLake Bronze Layer",
+				"type": "DatabricksNotebook",
+				"dependsOn": [
+					{
+						"activity": "Copy Inventory file from BW FTP to DataLake",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebookPath": "/Repos/AnalyticsEngine/AmerBCS-AnalyticsEngine/src/com/avnet/bda/inventory/ELT/Inventory_NA_Inventory_Bronze_Delta"
+				},
+				"linkedServiceName": {
+					"referenceName": "AzureDatabricksWUS2",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "Load Inventory data into DeltaLake Silver Layer",
+				"type": "DatabricksNotebook",
+				"dependsOn": [
+					{
+						"activity": "Load Inventory data into DeltaLake Bronze Layer",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebookPath": "/Repos/AnalyticsEngine/AmerBCS-AnalyticsEngine/src/com/avnet/bda/inventory/ELT/Inventory_NA_Inventory_Silver_Delta"
+				},
+				"linkedServiceName": {
+					"referenceName": "AzureDatabricksWUS2",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "Copy Inventory file to archive",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "Load Inventory data into DeltaLake Silver Layer",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "BinarySource",
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": false,
+							"deleteFilesAfterCompletion": true
+						},
+						"formatSettings": {
+							"type": "BinaryReadSettings"
+						}
+					},
+					"sink": {
+						"type": "BinarySink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						}
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "DL_binary_file_with_parameter",
+						"type": "DatasetReference",
+						"parameters": {
+							"DL_File_container": "inventory",
+							"DL_File_path": "staging/inventory/NA/Transaction/Delta",
+							"DL_File_name": "ENINV_AZ.csv"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DL_binary_file_with_parameter",
+						"type": "DatasetReference",
+						"parameters": {
+							"DL_File_container": "inventory",
+							"DL_File_path": "staging/inventory/NA/Transaction/Archive",
+							"DL_File_name": {
+								"value": "@concat('ENINV_AZ_',formatDateTime(utcnow(),'yyyy-MM-dd HH:mm'), '.csv')",
+								"type": "Expression"
+							}
+						}
+					}
+				]
+			}
+		],
+		"folder": {
+			"name": "Inventory"
+		},
+		"annotations": [],
+		"lastPublishTime": "2022-06-01T04:30:32Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

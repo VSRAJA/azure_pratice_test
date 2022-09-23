@@ -1,0 +1,20 @@
+{
+	"name": "PF_APAC_source_file_folder",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "PFFileServerASIABI",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "GlobalParameterDatasets/DataLake"
+		},
+		"annotations": [],
+		"type": "Binary",
+		"typeProperties": {
+			"location": {
+				"type": "FileServerLocation"
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

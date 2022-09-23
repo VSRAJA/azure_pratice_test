@@ -1,0 +1,52 @@
+{
+	"name": "Daily_JAPAN_Billing_data_load",
+	"properties": {
+		"activities": [
+			{
+				"name": "Execute Japan billing load",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "Japan_Billing_load",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "Execute Japan material load",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "Japan_Material_load",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "Execute Japan customer load",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "Japan_Customer_load",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			}
+		],
+		"folder": {
+			"name": "BKBL"
+		},
+		"annotations": [],
+		"lastPublishTime": "2022-05-25T02:07:34Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

@@ -1,0 +1,33 @@
+{
+	"name": "Daily_PF_APAC_Billing_data_load_Trigger",
+	"properties": {
+		"description": "PF APAC Billing Daily Trigger",
+		"annotations": [],
+		"runtimeState": "Started",
+		"pipelines": [
+			{
+				"pipelineReference": {
+					"referenceName": "Daily_PF_APAC_Billing_data_load",
+					"type": "PipelineReference"
+				}
+			}
+		],
+		"type": "ScheduleTrigger",
+		"typeProperties": {
+			"recurrence": {
+				"frequency": "Day",
+				"interval": 1,
+				"startTime": "2022-06-27T07:06:00Z",
+				"timeZone": "UTC",
+				"schedule": {
+					"minutes": [
+						30
+					],
+					"hours": [
+						23
+					]
+				}
+			}
+		}
+	}
+}

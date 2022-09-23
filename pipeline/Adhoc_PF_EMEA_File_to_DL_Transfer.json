@@ -1,0 +1,99 @@
+{
+	"name": "Adhoc_PF_EMEA_File_to_DL_Transfer",
+	"properties": {
+		"activities": [
+			{
+				"name": "Copy file from PF File Server to DataLake",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "BinarySource",
+						"storeSettings": {
+							"type": "FileServerReadSettings",
+							"recursive": false,
+							"deleteFilesAfterCompletion": false
+						},
+						"formatSettings": {
+							"type": "BinaryReadSettings"
+						}
+					},
+					"sink": {
+						"type": "BinarySink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						}
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "PF_EMEA_binary_file_with_parameter",
+						"type": "DatasetReference",
+						"parameters": {
+							"File_path": {
+								"value": "@pipeline().parameters.PF_server_file_path",
+								"type": "Expression"
+							},
+							"File_name": {
+								"value": "@pipeline().parameters.PF_server_file_name",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DL_binary_file_with_parameter",
+						"type": "DatasetReference",
+						"parameters": {
+							"DL_File_container": {
+								"value": "@pipeline().parameters.DL_File_container",
+								"type": "Expression"
+							},
+							"DL_File_path": {
+								"value": "@pipeline().parameters.DL_File_path",
+								"type": "Expression"
+							},
+							"DL_File_name": {
+								"value": "@pipeline().parameters.DL_File_name",
+								"type": "Expression"
+							}
+						}
+					}
+				]
+			}
+		],
+		"parameters": {
+			"PF_server_file_path": {
+				"type": "string"
+			},
+			"PF_server_file_name": {
+				"type": "string"
+			},
+			"DL_File_container": {
+				"type": "string"
+			},
+			"DL_File_path": {
+				"type": "string"
+			},
+			"DL_File_name": {
+				"type": "string"
+			}
+		},
+		"folder": {
+			"name": "GlobalParameterPipeline"
+		},
+		"annotations": [],
+		"lastPublishTime": "2022-06-09T00:29:49Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

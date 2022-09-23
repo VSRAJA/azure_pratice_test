@@ -1,0 +1,42 @@
+{
+	"name": "Adhoc_DataBricks_Notebook_Execute",
+	"properties": {
+		"activities": [
+			{
+				"name": "DataBricks Notebook",
+				"type": "DatabricksNotebook",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebookPath": {
+						"value": "@pipeline().parameters.NoteBook",
+						"type": "Expression"
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "AzureDatabricksWUS2",
+					"type": "LinkedServiceReference"
+				}
+			}
+		],
+		"parameters": {
+			"NoteBook": {
+				"type": "string",
+				"defaultValue": "/Repos/AnalyticsEngine/xxxx"
+			}
+		},
+		"folder": {
+			"name": "GlobalParameterPipeline"
+		},
+		"annotations": [],
+		"lastPublishTime": "2022-06-01T04:30:32Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

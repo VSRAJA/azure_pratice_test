@@ -1,0 +1,26 @@
+{
+	"name": "PF_APAC_PM_Delta_file_list",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureDataLakeStorageWUS2",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "PF_APAC_Inventory"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": "staging/inventory/PF_APAC/Meta/PM.csv",
+				"fileSystem": "inventory"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"quoteChar": "\""
+		},
+		"schema": []
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

@@ -1,0 +1,11 @@
+{
+	"name": "AzureKeyVaultWUS2",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "AzureKeyVault",
+		"typeProperties": {
+			"baseUrl": "https://avt-npr-wus2-bda-kv.vault.azure.net/"
+		}
+	}
+}

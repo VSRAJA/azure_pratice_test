@@ -1,0 +1,78 @@
+{
+	"name": "Daily_PF_APAC_Billing_data_load",
+	"properties": {
+		"activities": [
+			{
+				"name": "PF_APAC_Suppliers_load",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "PF_APAC_Suppliers_load",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "PF_APAC_ProdGroupCPC_load",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "PF_APAC_ProdGroupCPC_load",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "PF_APAC_CustomerShipTo_load",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "PF_APAC_CustomerShipTo_load",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "PF_APAC_Classcodes_load",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "PF_APAC_Classcodes_load",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "PF_APAC_Billing_load",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "PF_APAC_Billing_load",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			}
+		],
+		"folder": {
+			"name": "BKBL/PF_APAC"
+		},
+		"annotations": [],
+		"lastPublishTime": "2022-06-22T09:18:20Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

@@ -1,0 +1,71 @@
+{
+	"name": "PF_EMEA_Delta_Initial",
+	"properties": {
+		"activities": [
+			{
+				"name": "Adhoc - Move Initial Delta Products to Archive",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "BinarySource",
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": true,
+							"deleteFilesAfterCompletion": true
+						},
+						"formatSettings": {
+							"type": "BinaryReadSettings"
+						}
+					},
+					"sink": {
+						"type": "BinarySink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						}
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "DL_EU_binary_file_with_parameter",
+						"type": "DatasetReference",
+						"parameters": {
+							"DL_File_container": "inventory",
+							"DL_File_path": "staging/inventory/PF_EMEA/Transaction/Delta",
+							"DL_File_name": "EUR_PF_AnalyticsEngine_Inventory_20220608065850.txt.gz"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DL_EU_binary_file_with_parameter",
+						"type": "DatasetReference",
+						"parameters": {
+							"DL_File_container": "inventory",
+							"DL_File_path": "staging/inventory/PF_EMEA/Transaction/Archive",
+							"DL_File_name": {
+								"value": "@concat('EUR_PF_AnalyticsEngine_Inventory_20220608065850.txt.gz','^',formatDateTime(utcnow(),'yyyy-MM-dd HH:mm'))",
+								"type": "Expression"
+							}
+						}
+					}
+				]
+			}
+		],
+		"folder": {
+			"name": "Inventory/PF_EMEA"
+		},
+		"annotations": [],
+		"lastPublishTime": "2022-06-21T09:16:30Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

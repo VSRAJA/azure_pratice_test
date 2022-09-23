@@ -1,0 +1,35 @@
+{
+	"name": "Monthly_firstday_na_cust003_data_load",
+	"properties": {
+		"annotations": [],
+		"runtimeState": "Started",
+		"pipelines": [
+			{
+				"pipelineReference": {
+					"referenceName": "Monthly_NA_Cust003_data_load",
+					"type": "PipelineReference"
+				}
+			}
+		],
+		"type": "ScheduleTrigger",
+		"typeProperties": {
+			"recurrence": {
+				"frequency": "Month",
+				"interval": 1,
+				"startTime": "2022-09-01T08:19:00Z",
+				"timeZone": "UTC",
+				"schedule": {
+					"minutes": [
+						10
+					],
+					"hours": [
+						8
+					],
+					"monthDays": [
+						1
+					]
+				}
+			}
+		}
+	}
+}

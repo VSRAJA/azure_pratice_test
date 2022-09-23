@@ -1,0 +1,24 @@
+{
+	"name": "PFFileServerASIABI",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "FileServer",
+		"typeProperties": {
+			"host": "\\\\cap011svm\\mwPremierFarnellProd\\ASIABI",
+			"userId": "sysazacct@avnet.com",
+			"password": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "AzureKeyVaultWUS2",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": "SysazacctSecret"
+			}
+		},
+		"connectVia": {
+			"referenceName": "SHIR1",
+			"type": "IntegrationRuntimeReference"
+		}
+	}
+}

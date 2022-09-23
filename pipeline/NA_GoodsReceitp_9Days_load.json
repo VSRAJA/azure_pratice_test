@@ -1,0 +1,186 @@
+{
+	"name": "NA_GoodsReceitp_9Days_load",
+	"properties": {
+		"activities": [
+			{
+				"name": "GoodsReceipt_NA_GR_Bronze_Delta",
+				"type": "DatabricksNotebook",
+				"dependsOn": [
+					{
+						"activity": "Copy ZNAGRRP01_Day9",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebookPath": "/Repos/AnalyticsEngine/AmerBCS-AnalyticsEngine/src/com/avnet/bda/purchase/GoodReceipt/ELT/GoodsReceipt_NA_GR_Bronze_Delta"
+				},
+				"linkedServiceName": {
+					"referenceName": "AzureDatabricksWUS2",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "GoodsReceipt_NA_GR_Silver_Delta",
+				"type": "DatabricksNotebook",
+				"dependsOn": [
+					{
+						"activity": "GoodsReceipt_NA_GR_Bronze_Delta",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebookPath": "/Repos/AnalyticsEngine/AmerBCS-AnalyticsEngine/src/com/avnet/bda/purchase/GoodReceipt/ELT/GoodsReceipt_NA_GR_Silver_Delta"
+				},
+				"linkedServiceName": {
+					"referenceName": "AzureDatabricksWUS2",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "Move to Archive",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "GoodsReceipt_NA_GR_Silver_Delta",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "BinarySource",
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": true
+						},
+						"formatSettings": {
+							"type": "BinaryReadSettings"
+						}
+					},
+					"sink": {
+						"type": "BinarySink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						}
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "DL_binary_file_with_parameter",
+						"type": "DatasetReference",
+						"parameters": {
+							"DL_File_container": "purchase",
+							"DL_File_path": "staging/GoodsReceipt/NA/Transaction/Delta",
+							"DL_File_name": "ZNAGRRP01_Day9.csv"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DL_binary_file_with_parameter",
+						"type": "DatasetReference",
+						"parameters": {
+							"DL_File_container": "purchase",
+							"DL_File_path": "staging/GoodsReceipt/NA/Transaction/Archive",
+							"DL_File_name": {
+								"value": "@concat('ZNAGRRP01_Day9',string(utcnow()),'.csv')",
+								"type": "Expression"
+							}
+						}
+					}
+				]
+			},
+			{
+				"name": "Copy ZNAGRRP01_Day9",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "BinarySource",
+						"storeSettings": {
+							"type": "FtpReadSettings",
+							"recursive": true,
+							"useBinaryTransfer": true,
+							"disableChunking": false
+						},
+						"formatSettings": {
+							"type": "BinaryReadSettings"
+						}
+					},
+					"sink": {
+						"type": "BinarySink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						}
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "BW_FTP_binary_file_with_parameter",
+						"type": "DatasetReference",
+						"parameters": {
+							"BW_FTP_file_path": "PCH_OPENHUB/DATALAKE",
+							"BW_FTP_file_name": "ZNAGRRP01_Day9.csv"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DL_binary_file_with_parameter",
+						"type": "DatasetReference",
+						"parameters": {
+							"DL_File_container": "purchase",
+							"DL_File_path": "staging/GoodsReceipt/NA/Transaction/Delta",
+							"DL_File_name": "ZNAGRRP01_Day9.csv"
+						}
+					}
+				]
+			}
+		],
+		"folder": {
+			"name": "Purchase/GoodsReceipt"
+		},
+		"annotations": [],
+		"lastPublishTime": "2022-08-03T01:53:31Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

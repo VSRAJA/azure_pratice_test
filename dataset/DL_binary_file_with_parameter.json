@@ -1,0 +1,44 @@
+{
+	"name": "DL_binary_file_with_parameter",
+	"properties": {
+		"description": "Test pipeline or activity",
+		"linkedServiceName": {
+			"referenceName": "AzureDataLakeStorageWUS2",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"DL_File_container": {
+				"type": "string"
+			},
+			"DL_File_path": {
+				"type": "string"
+			},
+			"DL_File_name": {
+				"type": "string"
+			}
+		},
+		"folder": {
+			"name": "GlobalParameterDatasets/DataLake"
+		},
+		"annotations": [],
+		"type": "Binary",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": {
+					"value": "@dataset().DL_File_name",
+					"type": "Expression"
+				},
+				"folderPath": {
+					"value": "@dataset().DL_File_path",
+					"type": "Expression"
+				},
+				"fileSystem": {
+					"value": "@dataset().DL_File_container",
+					"type": "Expression"
+				}
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

@@ -1,0 +1,122 @@
+{
+	"name": "Daily_NA_Quote_data_load",
+	"properties": {
+		"activities": [
+			{
+				"name": "NA_MaterialPlant_load",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "NA_MaterialPlant_load",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "NA_MDMCustomer_load",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "NA_MDMCustomer_load",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "NA_MDMMaterial_load",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "NA_MDMMaterial_load",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "NA_QuoteHeader_load",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "NA_QuoteHeader_load",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "NA_QuoteItem_load",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "NA_QuoteItem_load",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "NA_QuotePartQty_load",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "NA_QuoteItem_load",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "NA_MDMMaterial_load",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "NA_MaterialPlant_load",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "NA_QuoteHeader_load",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "NA_MDMCustomer_load",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "NA_QuotePartQty_load",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			}
+		],
+		"folder": {
+			"name": "Quote"
+		},
+		"annotations": [],
+		"lastPublishTime": "2022-07-29T01:22:29Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

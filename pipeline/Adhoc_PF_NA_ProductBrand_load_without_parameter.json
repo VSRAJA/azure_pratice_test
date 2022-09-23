@@ -1,0 +1,327 @@
+{
+	"name": "Adhoc_PF_NA_ProductBrand_load_without_parameter",
+	"properties": {
+		"activities": [
+			{
+				"name": "pf_na_source_file_name",
+				"type": "GetMetadata",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "PF_AMER_source_file_folder",
+						"type": "DatasetReference"
+					},
+					"fieldList": [
+						"childItems"
+					],
+					"storeSettings": {
+						"type": "FileServerReadSettings",
+						"recursive": true,
+						"enablePartitionDiscovery": false
+					},
+					"formatSettings": {
+						"type": "BinaryReadSettings"
+					}
+				}
+			},
+			{
+				"name": "PF_NA_ProductBrand_Daily_Delta_FileList_Preprocess",
+				"type": "DatabricksNotebook",
+				"dependsOn": [
+					{
+						"activity": "pf_na_source_file_name",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebookPath": "/Repos/AnalyticsEngine_Feature_PF_NA_Billing/AmerBCS-AnalyticsEngine/src/com/avnet/bda/bkbl/ELT/PF_NA_ProductBrand_Daily_Delta_File_Preprocess",
+					"baseParameters": {
+						"FILE_NAME": {
+							"value": "@string(activity('pf_na_source_file_name').output.childItems)",
+							"type": "Expression"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "AzureDatabricksWUS2",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "Lookup ProductBrand",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "PF_NA_ProductBrand_Daily_Delta_FileList_Preprocess",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": true,
+							"wildcardFileName": "part-*",
+							"enablePartitionDiscovery": true,
+							"partitionRootPath": "bkbl/staging/bill24/PF_NA/Meta/ProductBrand.csv"
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"dataset": {
+						"referenceName": "PF_NA_ProductBrand_Delta_file_list",
+						"type": "DatasetReference"
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "ForEach ProductBrand",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Lookup ProductBrand",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('Lookup ProductBrand').output.value",
+						"type": "Expression"
+					},
+					"isSequential": true,
+					"activities": [
+						{
+							"name": "Copy ProductBrand",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "DelimitedTextSource",
+									"storeSettings": {
+										"type": "FileServerReadSettings",
+										"recursive": true,
+										"enablePartitionDiscovery": false
+									},
+									"formatSettings": {
+										"type": "DelimitedTextReadSettings",
+										"compressionProperties": {
+											"type": "ZipDeflateReadSettings"
+										}
+									}
+								},
+								"sink": {
+									"type": "DelimitedTextSink",
+									"storeSettings": {
+										"type": "AzureBlobFSWriteSettings"
+									},
+									"formatSettings": {
+										"type": "DelimitedTextWriteSettings",
+										"quoteAllText": true,
+										"fileExtension": ".txt"
+									}
+								},
+								"enableStaging": false
+							},
+							"inputs": [
+								{
+									"referenceName": "PF_AMER_CSV_file_with_parameter",
+									"type": "DatasetReference",
+									"parameters": {
+										"File_name": {
+											"value": "@{item().Prop_0}",
+											"type": "Expression"
+										}
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "DL_CSV_file_with_parameter",
+									"type": "DatasetReference",
+									"parameters": {
+										"DL_File_container": "bkbl",
+										"DL_File_path": "staging/bill24/PF_NA/Master/ProductBrand/Delta",
+										"DL_File_name": {
+											"value": "@concat(string(item().Prop_0),'.csv')",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						},
+						{
+							"name": "Inventory_PF_NA_ProductBrand_Bronze_Delta",
+							"type": "DatabricksNotebook",
+							"dependsOn": [
+								{
+									"activity": "Copy ProductBrand",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"notebookPath": "/Repos/AnalyticsEngine_Feature_PF_NA_Billing/AmerBCS-AnalyticsEngine/src/com/avnet/bda/bkbl/ELT/Bill024_PF_NA_Product_Brand_Bronze_Delta"
+							},
+							"linkedServiceName": {
+								"referenceName": "AzureDatabricksWUS2",
+								"type": "LinkedServiceReference"
+							}
+						},
+						{
+							"name": "Inventory_PF_NA_ProductBrand_Silver_Delta",
+							"type": "DatabricksNotebook",
+							"dependsOn": [
+								{
+									"activity": "Inventory_PF_NA_ProductBrand_Bronze_Delta",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"notebookPath": "/Repos/AnalyticsEngine_Feature_PF_NA_Billing/AmerBCS-AnalyticsEngine/src/com/avnet/bda/bkbl/ELT/Bill024_PF_NA_Product_Brand_Silver_Delta"
+							},
+							"linkedServiceName": {
+								"referenceName": "AzureDatabricksWUS2",
+								"type": "LinkedServiceReference"
+							}
+						},
+						{
+							"name": "Move ProductBrand to Archive",
+							"type": "Copy",
+							"dependsOn": [
+								{
+									"activity": "Inventory_PF_NA_ProductBrand_Silver_Delta",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "BinarySource",
+									"storeSettings": {
+										"type": "AzureBlobFSReadSettings",
+										"recursive": true,
+										"deleteFilesAfterCompletion": true
+									},
+									"formatSettings": {
+										"type": "BinaryReadSettings"
+									}
+								},
+								"sink": {
+									"type": "BinarySink",
+									"storeSettings": {
+										"type": "AzureBlobFSWriteSettings"
+									}
+								},
+								"enableStaging": false
+							},
+							"inputs": [
+								{
+									"referenceName": "DL_binary_file_with_parameter",
+									"type": "DatasetReference",
+									"parameters": {
+										"DL_File_container": "bkbl",
+										"DL_File_path": "staging/bill24/PF_NA/Master/ProductBrand/Delta",
+										"DL_File_name": {
+											"value": "@concat(string(item().Prop_0),'.csv')",
+											"type": "Expression"
+										}
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "DL_binary_file_with_parameter",
+									"type": "DatasetReference",
+									"parameters": {
+										"DL_File_container": "bkbl",
+										"DL_File_path": "staging/bill24/PF_NA/Master/ProductBrand/Archive",
+										"DL_File_name": {
+											"value": "@concat(string(item().Prop_0),'.csv','^',formatDateTime(utcnow(),'yyyy-MM-dd HH:mm'))",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						}
+					]
+				}
+			}
+		],
+		"folder": {
+			"name": "BKBL/PF_NA"
+		},
+		"annotations": [],
+		"lastPublishTime": "2022-06-29T00:23:31Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

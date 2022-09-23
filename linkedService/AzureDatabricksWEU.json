@@ -1,0 +1,30 @@
+{
+	"name": "AzureDatabricksWEU",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"description": "Azure Databricks workspace for the AnalyticEngine project ",
+		"annotations": [],
+		"type": "AzureDatabricks",
+		"typeProperties": {
+			"domain": "https://adb-3880313490163340.0.azuredatabricks.net",
+			"authentication": "MSI",
+			"workspaceResourceId": "/subscriptions/8ba7fb75-5e00-4a6f-8105-7376f2fb030d/resourceGroups/avt-npr-weu-bda-rg/providers/Microsoft.Databricks/workspaces/avt-npr-weu-bda-dbw",
+			"newClusterNodeType": "Standard_DS12_v2",
+			"newClusterNumOfWorker": "1:4",
+			"newClusterSparkEnvVars": {
+				"PYSPARK_PYTHON": "/databricks/python3/bin/python3"
+			},
+			"newClusterCustomTags": {
+				"Team": "Global Analytics"
+			},
+			"newClusterVersion": "7.3.x-scala2.12",
+			"newClusterLogDestination": "dbfs:/logs",
+			"newClusterInitScripts": [
+				"dbfs:/oms-agent-init/oms-agent.sh",
+				"dbfs:/databricks/spark-monitoring/spark-monitoring.sh"
+			],
+			"newClusterDriverNodeType": "Standard_DS12_v2",
+			"clusterOption": "Autoscaling"
+		}
+	}
+}

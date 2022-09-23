@@ -1,0 +1,20 @@
+{
+	"name": "NA_Material_AVP50",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "NCROracle",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "NA_Master"
+		},
+		"annotations": [],
+		"type": "OracleTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": "GOLDEN",
+			"table": "NO_COST_REPORT_TABLE"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

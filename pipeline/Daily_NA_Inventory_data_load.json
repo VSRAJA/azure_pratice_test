@@ -1,0 +1,26 @@
+{
+	"name": "Daily_NA_Inventory_data_load",
+	"properties": {
+		"activities": [
+			{
+				"name": "Execute Inventory load pipeline",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "NA_Inventory_load",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			}
+		],
+		"folder": {
+			"name": "Inventory"
+		},
+		"annotations": [],
+		"lastPublishTime": "2022-05-16T23:54:45Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

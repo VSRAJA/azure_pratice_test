@@ -1,0 +1,11 @@
+{
+	"name": "AzureKeyVaultWEU",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "AzureKeyVault",
+		"typeProperties": {
+			"baseUrl": "https://avt-npr-weu-bda2-dbw-kv.vault.azure.net/"
+		}
+	}
+}

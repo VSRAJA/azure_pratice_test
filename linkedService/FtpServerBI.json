@@ -1,0 +1,28 @@
+{
+	"name": "FtpServerBI",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "FtpServer",
+		"typeProperties": {
+			"host": "intftp.avnet.com",
+			"port": 21,
+			"enableSsl": false,
+			"enableServerCertificateValidation": false,
+			"authenticationType": "Basic",
+			"userName": "ftpfile",
+			"password": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "AzureKeyVaultWUS2",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": "FtpFileSecret"
+			}
+		},
+		"connectVia": {
+			"referenceName": "SHIR1",
+			"type": "IntegrationRuntimeReference"
+		}
+	}
+}

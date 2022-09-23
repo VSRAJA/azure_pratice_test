@@ -1,0 +1,35 @@
+{
+	"name": "PF_AMER_CSV_file_with_parameter",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "PFFileServerAMERBI",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"File_name": {
+				"type": "string"
+			}
+		},
+		"folder": {
+			"name": "GlobalParameterDatasets/DataLake"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "FileServerLocation",
+				"fileName": {
+					"value": "@dataset().File_name",
+					"type": "Expression"
+				}
+			},
+			"columnDelimiter": "\t",
+			"compressionCodec": "ZipDeflate",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": []
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

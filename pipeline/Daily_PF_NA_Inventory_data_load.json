@@ -1,0 +1,26 @@
+{
+	"name": "Daily_PF_NA_Inventory_data_load",
+	"properties": {
+		"activities": [
+			{
+				"name": "PF_NA_Inventory_load",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "PF_NA_Inventory_load",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			}
+		],
+		"folder": {
+			"name": "Inventory/PF_NA"
+		},
+		"annotations": [],
+		"lastPublishTime": "2022-06-29T00:23:30Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

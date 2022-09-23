@@ -1,0 +1,1261 @@
+{
+	"name": "Single Chain_Daily_PF_EMEA_Inventory_data_load",
+	"properties": {
+		"activities": [
+			{
+				"name": "pf_emea_source_file_name",
+				"type": "GetMetadata",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "PF_EMEA_source_file_folder",
+						"type": "DatasetReference"
+					},
+					"fieldList": [
+						"childItems"
+					],
+					"storeSettings": {
+						"type": "FileServerReadSettings",
+						"recursive": true,
+						"enablePartitionDiscovery": false
+					},
+					"formatSettings": {
+						"type": "BinaryReadSettings"
+					}
+				}
+			},
+			{
+				"name": "PF_EMEA_Inventory_Daily_Delta_File_Preprocess",
+				"type": "DatabricksNotebook",
+				"dependsOn": [
+					{
+						"activity": "pf_emea_source_file_name",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebookPath": "/Users/harry.wang@avtinc.onmicrosoft.com/PF_EMEA_Inventory_Daily_Delta_File_Preprocess",
+					"baseParameters": {
+						"FILE_NAME": {
+							"value": "@string(activity('pf_emea_source_file_name').output.childItems)",
+							"type": "Expression"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "AzureDatabricksWEU",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "Lookup PM",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "PF_EMEA_Inventory_Daily_Delta_File_Preprocess",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": true,
+							"wildcardFileName": "part-*",
+							"enablePartitionDiscovery": true,
+							"partitionRootPath": "inventory/staging/inventory/PF_EMEA/Meta/PM.csv"
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"dataset": {
+						"referenceName": "PF_EMEA_PM_Delta_file_list",
+						"type": "DatasetReference"
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "ForEach PM",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Lookup PM",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('Lookup PM').output.value",
+						"type": "Expression"
+					},
+					"isSequential": true,
+					"activities": [
+						{
+							"name": "Copy PM",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "BinarySource",
+									"storeSettings": {
+										"type": "FileServerReadSettings",
+										"recursive": true,
+										"wildcardFileName": {
+											"value": "@{item().Prop_0}",
+											"type": "Expression"
+										},
+										"deleteFilesAfterCompletion": false
+									},
+									"formatSettings": {
+										"type": "BinaryReadSettings"
+									}
+								},
+								"sink": {
+									"type": "BinarySink",
+									"storeSettings": {
+										"type": "AzureBlobFSWriteSettings"
+									}
+								},
+								"enableStaging": false
+							},
+							"inputs": [
+								{
+									"referenceName": "PF_EMEA_source_file_folder",
+									"type": "DatasetReference"
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "PF_EMEA_Target_file_folder",
+									"type": "DatasetReference",
+									"parameters": {
+										"DL_File_container": "inventory",
+										"DL_File_path": "staging/inventory/PF_EMEA/Master/PM/Delta"
+									}
+								}
+							]
+						},
+						{
+							"name": "Inventory_PF_EMEA_PM_Bronze_Delta",
+							"type": "DatabricksNotebook",
+							"dependsOn": [
+								{
+									"activity": "Copy PM",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"notebookPath": "/Repos/AnalyticsEngine/AmerBCS-AnalyticsEngine/src/com/avnet/bda/inventory/ELT/Inventory_PF_EMEA_ProductManager_Bronze_Delta"
+							},
+							"linkedServiceName": {
+								"referenceName": "AzureDatabricksWEU",
+								"type": "LinkedServiceReference"
+							}
+						},
+						{
+							"name": "Inventory_PF_EMEA_PM_Silver_Delta_copy1",
+							"type": "DatabricksNotebook",
+							"dependsOn": [
+								{
+									"activity": "Inventory_PF_EMEA_PM_Bronze_Delta",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"notebookPath": "/Repos/AnalyticsEngine/AmerBCS-AnalyticsEngine/src/com/avnet/bda/inventory/ELT/Inventory_PF_EMEA_ProductManager_Silver_Delta"
+							},
+							"linkedServiceName": {
+								"referenceName": "AzureDatabricksWEU",
+								"type": "LinkedServiceReference"
+							}
+						},
+						{
+							"name": "Move to PM Archive",
+							"type": "Copy",
+							"dependsOn": [
+								{
+									"activity": "Inventory_PF_EMEA_PM_Silver_Delta_copy1",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "BinarySource",
+									"storeSettings": {
+										"type": "AzureBlobFSReadSettings",
+										"recursive": true,
+										"deleteFilesAfterCompletion": true
+									},
+									"formatSettings": {
+										"type": "BinaryReadSettings"
+									}
+								},
+								"sink": {
+									"type": "BinarySink",
+									"storeSettings": {
+										"type": "AzureBlobFSWriteSettings"
+									}
+								},
+								"enableStaging": false
+							},
+							"inputs": [
+								{
+									"referenceName": "DL_EU_binary_file_with_parameter",
+									"type": "DatasetReference",
+									"parameters": {
+										"DL_File_container": "inventory",
+										"DL_File_path": "staging/inventory/PF_EMEA/Master/PM/Delta",
+										"DL_File_name": {
+											"value": "@{item().Prop_0}",
+											"type": "Expression"
+										}
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "DL_EU_binary_file_with_parameter",
+									"type": "DatasetReference",
+									"parameters": {
+										"DL_File_container": "inventory",
+										"DL_File_path": "staging/inventory/PF_EMEA/Master/PM/Archive",
+										"DL_File_name": {
+											"value": "@concat(item().Prop_0,'^',formatDateTime(utcnow(),'yyyy-MM-dd HH:mm'))",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"name": "Lookup ExchangeRate",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "PF_EMEA_Inventory_Daily_Delta_File_Preprocess",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": true,
+							"wildcardFileName": "part-*",
+							"enablePartitionDiscovery": true,
+							"partitionRootPath": "inventory/staging/inventory/PF_EMEA/Meta/Exchange2.csv"
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"dataset": {
+						"referenceName": "PF_EMEA_Ex2_Delta_file_list",
+						"type": "DatasetReference"
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "ForEach ExchangeRate2",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Lookup ExchangeRate",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('Lookup ExchangeRate').output.value",
+						"type": "Expression"
+					},
+					"isSequential": true,
+					"activities": [
+						{
+							"name": "Copy Ex2",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "BinarySource",
+									"storeSettings": {
+										"type": "FileServerReadSettings",
+										"recursive": true,
+										"wildcardFileName": {
+											"value": "@{item().Prop_0}",
+											"type": "Expression"
+										},
+										"deleteFilesAfterCompletion": false
+									},
+									"formatSettings": {
+										"type": "BinaryReadSettings"
+									}
+								},
+								"sink": {
+									"type": "BinarySink",
+									"storeSettings": {
+										"type": "AzureBlobFSWriteSettings"
+									}
+								},
+								"enableStaging": false
+							},
+							"inputs": [
+								{
+									"referenceName": "PF_EMEA_source_file_folder",
+									"type": "DatasetReference"
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "PF_EMEA_Target_file_folder",
+									"type": "DatasetReference",
+									"parameters": {
+										"DL_File_container": "inventory",
+										"DL_File_path": "staging/inventory/PF_EMEA/Master/Exrate/Delta"
+									}
+								}
+							]
+						},
+						{
+							"name": "Inventory_PF_EMEA_ExRates_Bronze_Delta",
+							"type": "DatabricksNotebook",
+							"dependsOn": [
+								{
+									"activity": "Copy Ex2",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"notebookPath": "/Repos/AnalyticsEngine/AmerBCS-AnalyticsEngine/src/com/avnet/bda/inventory/ELT/Inventory_PF_EMEA_ExRates_Bronze_Delta"
+							},
+							"linkedServiceName": {
+								"referenceName": "AzureDatabricksWEU",
+								"type": "LinkedServiceReference"
+							}
+						},
+						{
+							"name": "Inventory_PF_EMEA_ExRates_Silver_Delta",
+							"type": "DatabricksNotebook",
+							"dependsOn": [
+								{
+									"activity": "Inventory_PF_EMEA_ExRates_Bronze_Delta",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"notebookPath": "/Repos/AnalyticsEngine/AmerBCS-AnalyticsEngine/src/com/avnet/bda/inventory/ELT/Inventory_PF_EMEA_ExRates_Silver_Delta"
+							},
+							"linkedServiceName": {
+								"referenceName": "AzureDatabricksWEU",
+								"type": "LinkedServiceReference"
+							}
+						},
+						{
+							"name": "Move Exrate to Archive",
+							"type": "Copy",
+							"dependsOn": [
+								{
+									"activity": "Inventory_PF_EMEA_ExRates_Silver_Delta",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "BinarySource",
+									"storeSettings": {
+										"type": "AzureBlobFSReadSettings",
+										"recursive": true,
+										"deleteFilesAfterCompletion": true
+									},
+									"formatSettings": {
+										"type": "BinaryReadSettings"
+									}
+								},
+								"sink": {
+									"type": "BinarySink",
+									"storeSettings": {
+										"type": "AzureBlobFSWriteSettings"
+									}
+								},
+								"enableStaging": false
+							},
+							"inputs": [
+								{
+									"referenceName": "DL_EU_binary_file_with_parameter",
+									"type": "DatasetReference",
+									"parameters": {
+										"DL_File_container": "inventory",
+										"DL_File_path": "staging/inventory/PF_EMEA/Master/Exrate/Delta",
+										"DL_File_name": {
+											"value": "@{item().Prop_0}",
+											"type": "Expression"
+										}
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "DL_EU_binary_file_with_parameter",
+									"type": "DatasetReference",
+									"parameters": {
+										"DL_File_container": "inventory",
+										"DL_File_path": "staging/inventory/PF_EMEA/Master/Exrate/Archive",
+										"DL_File_name": {
+											"value": "@concat(item().Prop_0,'^',formatDateTime(utcnow(),'yyyy-MM-dd HH:mm'))",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"name": "Lookup Product",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "PF_EMEA_Inventory_Daily_Delta_File_Preprocess",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": true,
+							"wildcardFileName": "part-*",
+							"enablePartitionDiscovery": true,
+							"partitionRootPath": "inventory/staging/inventory/PF_EMEA/Meta/Products.csv"
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"dataset": {
+						"referenceName": "PF_EMEA_Products_Delta_file_list",
+						"type": "DatasetReference"
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "ForEach Products",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Lookup Product",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('Lookup Product').output.value",
+						"type": "Expression"
+					},
+					"isSequential": true,
+					"activities": [
+						{
+							"name": "Copy Products",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "BinarySource",
+									"storeSettings": {
+										"type": "FileServerReadSettings",
+										"recursive": true,
+										"wildcardFileName": {
+											"value": "@{item().Prop_0}",
+											"type": "Expression"
+										},
+										"deleteFilesAfterCompletion": false
+									},
+									"formatSettings": {
+										"type": "BinaryReadSettings"
+									}
+								},
+								"sink": {
+									"type": "BinarySink",
+									"storeSettings": {
+										"type": "AzureBlobFSWriteSettings"
+									}
+								},
+								"enableStaging": false
+							},
+							"inputs": [
+								{
+									"referenceName": "PF_EMEA_source_file_folder",
+									"type": "DatasetReference"
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "PF_EMEA_Target_file_folder",
+									"type": "DatasetReference",
+									"parameters": {
+										"DL_File_container": "inventory",
+										"DL_File_path": "staging/inventory/PF_EMEA/Master/Products/Delta"
+									}
+								}
+							]
+						},
+						{
+							"name": "Inventory_PF_EMEA_Product_Bronze_Delta",
+							"type": "DatabricksNotebook",
+							"dependsOn": [
+								{
+									"activity": "Copy Products",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"notebookPath": "/Repos/AnalyticsEngine/AmerBCS-AnalyticsEngine/src/com/avnet/bda/inventory/ELT/Inventory_PF_EMEA_Product_Bronze_Delta"
+							},
+							"linkedServiceName": {
+								"referenceName": "AzureDatabricksWEU",
+								"type": "LinkedServiceReference"
+							}
+						},
+						{
+							"name": "Inventory_PF_EMEA_Product_Silver_Delta",
+							"type": "DatabricksNotebook",
+							"dependsOn": [
+								{
+									"activity": "Inventory_PF_EMEA_Product_Bronze_Delta",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"notebookPath": "/Repos/AnalyticsEngine/AmerBCS-AnalyticsEngine/src/com/avnet/bda/inventory/ELT/Inventory_PF_EMEA_Product_Silver_Delta"
+							},
+							"linkedServiceName": {
+								"referenceName": "AzureDatabricksWEU",
+								"type": "LinkedServiceReference"
+							}
+						},
+						{
+							"name": "Move Products to Archive",
+							"type": "Copy",
+							"dependsOn": [
+								{
+									"activity": "Inventory_PF_EMEA_Product_Silver_Delta",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "BinarySource",
+									"storeSettings": {
+										"type": "AzureBlobFSReadSettings",
+										"recursive": true,
+										"deleteFilesAfterCompletion": true
+									},
+									"formatSettings": {
+										"type": "BinaryReadSettings"
+									}
+								},
+								"sink": {
+									"type": "BinarySink",
+									"storeSettings": {
+										"type": "AzureBlobFSWriteSettings"
+									}
+								},
+								"enableStaging": false
+							},
+							"inputs": [
+								{
+									"referenceName": "DL_EU_binary_file_with_parameter",
+									"type": "DatasetReference",
+									"parameters": {
+										"DL_File_container": "inventory",
+										"DL_File_path": "staging/inventory/PF_EMEA/Master/Products/Delta",
+										"DL_File_name": {
+											"value": "@{item().Prop_0}",
+											"type": "Expression"
+										}
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "DL_EU_binary_file_with_parameter",
+									"type": "DatasetReference",
+									"parameters": {
+										"DL_File_container": "inventory",
+										"DL_File_path": "staging/inventory/PF_EMEA/Master/Products/Archive",
+										"DL_File_name": {
+											"value": "@concat(item().Prop_0,'^',formatDateTime(utcnow(),'yyyy-MM-dd HH:mm'))",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"name": "Lookup Inventory",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "PF_EMEA_Inventory_Daily_Delta_File_Preprocess",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": true,
+							"wildcardFileName": "part-*",
+							"enablePartitionDiscovery": true,
+							"partitionRootPath": "inventory/staging/inventory/PF_EMEA/Meta/Inventory.csv"
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"dataset": {
+						"referenceName": "PF_EMEA_Inventory_Delta_file_list",
+						"type": "DatasetReference"
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "ForEach Inventory",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Lookup Inventory",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('Lookup Inventory').output.value",
+						"type": "Expression"
+					},
+					"isSequential": true,
+					"activities": [
+						{
+							"name": "Copy Inventory",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "BinarySource",
+									"storeSettings": {
+										"type": "FileServerReadSettings",
+										"recursive": true,
+										"wildcardFileName": {
+											"value": "@{item().Prop_0}",
+											"type": "Expression"
+										},
+										"deleteFilesAfterCompletion": false
+									},
+									"formatSettings": {
+										"type": "BinaryReadSettings"
+									}
+								},
+								"sink": {
+									"type": "BinarySink",
+									"storeSettings": {
+										"type": "AzureBlobFSWriteSettings"
+									}
+								},
+								"enableStaging": false
+							},
+							"inputs": [
+								{
+									"referenceName": "PF_EMEA_source_file_folder",
+									"type": "DatasetReference"
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "PF_EMEA_Target_file_folder",
+									"type": "DatasetReference",
+									"parameters": {
+										"DL_File_container": "inventory",
+										"DL_File_path": "staging/inventory/PF_EMEA/Transaction/Delta"
+									}
+								}
+							]
+						},
+						{
+							"name": "Inventory_PF_EMEA_Inventory_Bronze_Delta",
+							"type": "DatabricksNotebook",
+							"dependsOn": [
+								{
+									"activity": "Copy Inventory",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"notebookPath": "/Repos/AnalyticsEngine/AmerBCS-AnalyticsEngine/src/com/avnet/bda/inventory/ELT/Inventory_PF_EMEA_Inventory_Bronze_Delta"
+							},
+							"linkedServiceName": {
+								"referenceName": "AzureDatabricksWEU",
+								"type": "LinkedServiceReference"
+							}
+						},
+						{
+							"name": "Inventory_PF_EMEA_Inventory_Silver_Delta",
+							"type": "DatabricksNotebook",
+							"dependsOn": [
+								{
+									"activity": "Inventory_PF_EMEA_Inventory_Bronze_Delta",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"notebookPath": "/Repos/AnalyticsEngine/AmerBCS-AnalyticsEngine/src/com/avnet/bda/inventory/ELT/Inventory_PF_EMEA_Inventory_Silver_Delta"
+							},
+							"linkedServiceName": {
+								"referenceName": "AzureDatabricksWEU",
+								"type": "LinkedServiceReference"
+							}
+						},
+						{
+							"name": "Move Inventory to Archive",
+							"type": "Copy",
+							"dependsOn": [
+								{
+									"activity": "Inventory_PF_EMEA_Inventory_Silver_Delta",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "BinarySource",
+									"storeSettings": {
+										"type": "AzureBlobFSReadSettings",
+										"recursive": true,
+										"deleteFilesAfterCompletion": true
+									},
+									"formatSettings": {
+										"type": "BinaryReadSettings"
+									}
+								},
+								"sink": {
+									"type": "BinarySink",
+									"storeSettings": {
+										"type": "AzureBlobFSWriteSettings"
+									}
+								},
+								"enableStaging": false
+							},
+							"inputs": [
+								{
+									"referenceName": "DL_EU_binary_file_with_parameter",
+									"type": "DatasetReference",
+									"parameters": {
+										"DL_File_container": "inventory",
+										"DL_File_path": "staging/inventory/PF_EMEA/Transaction/Delta",
+										"DL_File_name": {
+											"value": "@{item().Prop_0}",
+											"type": "Expression"
+										}
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "DL_EU_binary_file_with_parameter",
+									"type": "DatasetReference",
+									"parameters": {
+										"DL_File_container": "inventory",
+										"DL_File_path": "staging/inventory/PF_EMEA/Transaction/Archive",
+										"DL_File_name": {
+											"value": "@concat(item().Prop_0,'^',formatDateTime(utcnow(),'yyyy-MM-dd HH:mm'))",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"name": "Lookup Brand",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "PF_EMEA_Inventory_Daily_Delta_File_Preprocess",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": true,
+							"wildcardFileName": "part-*",
+							"enablePartitionDiscovery": true,
+							"partitionRootPath": "inventory/staging/inventory/PF_EMEA/Meta/Brand.csv"
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"dataset": {
+						"referenceName": "PF_EMEA_Brand_Delta_file_list",
+						"type": "DatasetReference"
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "ForEach Brand",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Lookup Brand",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('Lookup Brand').output.value",
+						"type": "Expression"
+					},
+					"isSequential": true,
+					"activities": [
+						{
+							"name": "Copy Brands",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "BinarySource",
+									"storeSettings": {
+										"type": "FileServerReadSettings",
+										"recursive": true,
+										"wildcardFileName": {
+											"value": "@{item().Prop_0}",
+											"type": "Expression"
+										},
+										"deleteFilesAfterCompletion": false
+									},
+									"formatSettings": {
+										"type": "BinaryReadSettings"
+									}
+								},
+								"sink": {
+									"type": "BinarySink",
+									"storeSettings": {
+										"type": "AzureBlobFSWriteSettings"
+									}
+								},
+								"enableStaging": false
+							},
+							"inputs": [
+								{
+									"referenceName": "PF_EMEA_source_file_folder",
+									"type": "DatasetReference"
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "PF_EMEA_Target_file_folder",
+									"type": "DatasetReference",
+									"parameters": {
+										"DL_File_container": "inventory",
+										"DL_File_path": "staging/inventory/PF_EMEA/Master/Brands/Delta"
+									}
+								}
+							]
+						},
+						{
+							"name": "Inventory_PF_EMEA_Brands_Bronze_Delta",
+							"type": "DatabricksNotebook",
+							"dependsOn": [
+								{
+									"activity": "Copy Brands",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"notebookPath": "/Repos/AnalyticsEngine/AmerBCS-AnalyticsEngine/src/com/avnet/bda/inventory/ELT/Inventory_PF_EMEA_Brands_Bronze_Delta"
+							},
+							"linkedServiceName": {
+								"referenceName": "AzureDatabricksWEU",
+								"type": "LinkedServiceReference"
+							}
+						},
+						{
+							"name": "Inventory_PF_EMEA_Brands_Silver_Delta",
+							"type": "DatabricksNotebook",
+							"dependsOn": [
+								{
+									"activity": "Inventory_PF_EMEA_Brands_Bronze_Delta",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"notebookPath": "/Repos/AnalyticsEngine/AmerBCS-AnalyticsEngine/src/com/avnet/bda/inventory/ELT/Inventory_PF_EMEA_Brands_Silver_Delta"
+							},
+							"linkedServiceName": {
+								"referenceName": "AzureDatabricksWEU",
+								"type": "LinkedServiceReference"
+							}
+						},
+						{
+							"name": "Move to Brands Archive",
+							"type": "Copy",
+							"dependsOn": [
+								{
+									"activity": "Inventory_PF_EMEA_Brands_Silver_Delta",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "BinarySource",
+									"storeSettings": {
+										"type": "AzureBlobFSReadSettings",
+										"recursive": true,
+										"deleteFilesAfterCompletion": true
+									},
+									"formatSettings": {
+										"type": "BinaryReadSettings"
+									}
+								},
+								"sink": {
+									"type": "BinarySink",
+									"storeSettings": {
+										"type": "AzureBlobFSWriteSettings"
+									}
+								},
+								"enableStaging": false
+							},
+							"inputs": [
+								{
+									"referenceName": "DL_EU_binary_file_with_parameter",
+									"type": "DatasetReference",
+									"parameters": {
+										"DL_File_container": "inventory",
+										"DL_File_path": "staging/inventory/PF_EMEA/Master/Brands/Delta",
+										"DL_File_name": {
+											"value": "@{item().Prop_0}",
+											"type": "Expression"
+										}
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "DL_EU_binary_file_with_parameter",
+									"type": "DatasetReference",
+									"parameters": {
+										"DL_File_container": "inventory",
+										"DL_File_path": "staging/inventory/PF_EMEA/Master/Brands/Archive",
+										"DL_File_name": {
+											"value": "@concat(item().Prop_0,'^',formatDateTime(utcnow(),'yyyy-MM-dd HH:mm'))",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						}
+					]
+				}
+			}
+		],
+		"folder": {
+			"name": "Inventory/PF_EMEA"
+		},
+		"annotations": [],
+		"lastPublishTime": "2022-06-21T09:16:31Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

@@ -1,0 +1,26 @@
+{
+	"name": "Daily_NA_GoodsReceitp_9Days_load",
+	"properties": {
+		"activities": [
+			{
+				"name": "NA_GoodsReceitp_9Days_load",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "NA_GoodsReceitp_9Days_load",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			}
+		],
+		"folder": {
+			"name": "Purchase/GoodsReceipt"
+		},
+		"annotations": [],
+		"lastPublishTime": "2022-08-03T01:53:32Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

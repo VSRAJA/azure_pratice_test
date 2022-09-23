@@ -1,0 +1,33 @@
+{
+	"name": "Daily_PF_EMEA_Inventory_data_load_Trigger",
+	"properties": {
+		"description": "PF EMEA Inventory Daily Trigger",
+		"annotations": [],
+		"runtimeState": "Started",
+		"pipelines": [
+			{
+				"pipelineReference": {
+					"referenceName": "Daily_PF_EMEA_Inventory_data_load",
+					"type": "PipelineReference"
+				}
+			}
+		],
+		"type": "ScheduleTrigger",
+		"typeProperties": {
+			"recurrence": {
+				"frequency": "Day",
+				"interval": 1,
+				"startTime": "2022-06-27T00:49:00Z",
+				"timeZone": "UTC",
+				"schedule": {
+					"minutes": [
+						30
+					],
+					"hours": [
+						23
+					]
+				}
+			}
+		}
+	}
+}

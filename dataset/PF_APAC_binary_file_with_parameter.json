@@ -1,0 +1,36 @@
+{
+	"name": "PF_APAC_binary_file_with_parameter",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "PFFileServerASIABI",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"File_path": {
+				"type": "string"
+			},
+			"File_name": {
+				"type": "string"
+			}
+		},
+		"folder": {
+			"name": "GlobalParameterDatasets/DataLake"
+		},
+		"annotations": [],
+		"type": "Binary",
+		"typeProperties": {
+			"location": {
+				"type": "FileServerLocation",
+				"fileName": {
+					"value": "@dataset().File_name",
+					"type": "Expression"
+				},
+				"folderPath": {
+					"value": "@dataset().File_path",
+					"type": "Expression"
+				}
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

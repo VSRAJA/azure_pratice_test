@@ -1,0 +1,26 @@
+{
+	"name": "Daily_NA_Booking_data_load",
+	"properties": {
+		"activities": [
+			{
+				"name": "NA_Booking_load",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "NA_Booking_load",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			}
+		],
+		"folder": {
+			"name": "BKBL"
+		},
+		"annotations": [],
+		"lastPublishTime": "2022-08-08T01:49:48Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

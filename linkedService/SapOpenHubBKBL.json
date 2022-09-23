@@ -1,0 +1,26 @@
+{
+	"name": "SapOpenHubBKBL",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "SapOpenHub",
+		"typeProperties": {
+			"clientId": "100",
+			"userName": "AZBWOPENHUB",
+			"password": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "AzureKeyVaultWUS2",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": "SAPOHUserSecret"
+			},
+			"server": "gbwras0.avnet.com",
+			"systemNumber": "10"
+		},
+		"connectVia": {
+			"referenceName": "SHIR1",
+			"type": "IntegrationRuntimeReference"
+		}
+	}
+}

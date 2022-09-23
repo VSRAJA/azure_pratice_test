@@ -1,0 +1,23 @@
+{
+	"name": "NCROracle",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"description": "No Cost Report Oracle",
+		"annotations": [],
+		"type": "Oracle",
+		"typeProperties": {
+			"connectionString": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "AzureKeyVaultWUS2",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": "NCROracleConnectionString"
+			}
+		},
+		"connectVia": {
+			"referenceName": "SHIR1",
+			"type": "IntegrationRuntimeReference"
+		}
+	}
+}

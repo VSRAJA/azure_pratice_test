@@ -1,0 +1,9 @@
+{
+	"name": "avt-npr-wus2-bda-adf",
+	"location": "westus2",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "7dc9ef94-2ad2-4646-a7e6-0923a9c76114",
+		"tenantId": "8820279b-c0be-4bde-83ed-fe6b6f9724d5"
+	}
+}

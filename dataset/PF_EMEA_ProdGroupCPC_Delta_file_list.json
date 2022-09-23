@@ -1,0 +1,26 @@
+{
+	"name": "PF_EMEA_ProdGroupCPC_Delta_file_list",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureDataLakeStorageWEU",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "PF_EMEA_Billing"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": "staging/bill24/PF_EMEA/Meta/ProdGroupCPC.csv",
+				"fileSystem": "bkbl"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"quoteChar": "\""
+		},
+		"schema": []
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

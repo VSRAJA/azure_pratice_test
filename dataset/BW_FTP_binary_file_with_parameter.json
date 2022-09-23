@@ -1,0 +1,37 @@
+{
+	"name": "BW_FTP_binary_file_with_parameter",
+	"properties": {
+		"description": "Test pipeline",
+		"linkedServiceName": {
+			"referenceName": "FtpServerBI",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"BW_FTP_file_path": {
+				"type": "string"
+			},
+			"BW_FTP_file_name": {
+				"type": "string"
+			}
+		},
+		"folder": {
+			"name": "GlobalParameterDatasets/FTP"
+		},
+		"annotations": [],
+		"type": "Binary",
+		"typeProperties": {
+			"location": {
+				"type": "FtpServerLocation",
+				"fileName": {
+					"value": "@dataset().BW_FTP_file_name",
+					"type": "Expression"
+				},
+				"folderPath": {
+					"value": "@dataset().BW_FTP_file_path",
+					"type": "Expression"
+				}
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

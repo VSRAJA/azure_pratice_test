@@ -1,0 +1,36 @@
+{
+	"name": "PF_EMEA_Target_file_folder",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureDataLakeStorageWEU",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"DL_File_container": {
+				"type": "string"
+			},
+			"DL_File_path": {
+				"type": "string"
+			}
+		},
+		"folder": {
+			"name": "GlobalParameterDatasets/DataLake"
+		},
+		"annotations": [],
+		"type": "Binary",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": {
+					"value": "@dataset().DL_File_path",
+					"type": "Expression"
+				},
+				"fileSystem": {
+					"value": "@dataset().DL_File_container",
+					"type": "Expression"
+				}
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

@@ -1,0 +1,25 @@
+{
+	"name": "PFFileServerEMEABI",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"description": "PF EMEA BI",
+		"annotations": [],
+		"type": "FileServer",
+		"typeProperties": {
+			"host": "\\\\cap011svm\\mwPremierFarnellProd\\EMEABI",
+			"userId": "sysazacct@avnet.com",
+			"password": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "AzureKeyVaultWUS2",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": "SysazacctSecret"
+			}
+		},
+		"connectVia": {
+			"referenceName": "SHIREU1",
+			"type": "IntegrationRuntimeReference"
+		}
+	}
+}

@@ -1,0 +1,32 @@
+{
+	"name": "PF_NA_Billing_Daily_New",
+	"properties": {
+		"annotations": [],
+		"runtimeState": "Started",
+		"pipelines": [
+			{
+				"pipelineReference": {
+					"referenceName": "Daily_PF_NA_Billing_data_load_New",
+					"type": "PipelineReference"
+				}
+			}
+		],
+		"type": "ScheduleTrigger",
+		"typeProperties": {
+			"recurrence": {
+				"frequency": "Day",
+				"interval": 1,
+				"startTime": "2022-07-18T23:55:00",
+				"timeZone": "China Standard Time",
+				"schedule": {
+					"minutes": [
+						55
+					],
+					"hours": [
+						23
+					]
+				}
+			}
+		}
+	}
+}
