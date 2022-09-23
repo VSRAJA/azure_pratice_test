@@ -1,5 +1,6 @@
 {
 	"name": "PFFileServerEMEABI",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
 	"properties": {
 		"description": "PF EMEA BI",
 		"annotations": [],
@@ -20,6 +21,5 @@
 			"referenceName": "SHIREU1",
 			"type": "IntegrationRuntimeReference"
 		}
-	},
-	"type": "Microsoft.DataFactory/factories/linkedservices"
+	}
 }
