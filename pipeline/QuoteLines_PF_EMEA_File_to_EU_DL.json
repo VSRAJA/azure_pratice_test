@@ -3,8 +3,8 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "Get Metadata1",
-				"type": "GetMetadata",
+				"name": "PF_EMEA_ToEMEA_DL",
+				"type": "Copy",
 				"dependsOn": [],
 				"policy": {
 					"timeout": "0.12:00:00",
@@ -15,26 +15,40 @@
 				},
 				"userProperties": [],
 				"typeProperties": {
-					"dataset": {
-						"referenceName": "PF_EMEA_binary_file_with_parameter",
-						"type": "DatasetReference",
-						"parameters": {
-							"File_path": "/",
-							"File_name": "EUR_PF_AnalyticsEngine_VendavoDet*.gz"
+					"source": {
+						"type": "BinarySource",
+						"storeSettings": {
+							"type": "FileServerReadSettings",
+							"recursive": true
+						},
+						"formatSettings": {
+							"type": "BinaryReadSettings"
 						}
 					},
-					"fieldList": [
-						"itemName",
-						"childItems"
-					],
-					"storeSettings": {
-						"type": "FileServerReadSettings",
-						"enablePartitionDiscovery": false
+					"sink": {
+						"type": "BinarySink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						}
 					},
-					"formatSettings": {
-						"type": "BinaryReadSettings"
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "PF_EMEA_source_file_folder",
+						"type": "DatasetReference"
 					}
-				}
+				],
+				"outputs": [
+					{
+						"referenceName": "PF_EMEA_Target_file_folder",
+						"type": "DatasetReference",
+						"parameters": {
+							"DL_File_container": "quote",
+							"DL_File_path": "staging/quote/PF_EMEA/Transaction/quotelines/delta/"
+						}
+					}
+				]
 			}
 		],
 		"parameters": {
