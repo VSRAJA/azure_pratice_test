@@ -1,12 +1,11 @@
 {
 	"name": "PFFileServerEMEABI",
-	"type": "Microsoft.DataFactory/factories/linkedservices",
 	"properties": {
 		"description": "PF EMEA BI",
 		"annotations": [],
 		"type": "FileServer",
 		"typeProperties": {
-			"host": "\\\\cap011svm\\mwPremierFarnellProd\\EMEABI",
+			"host": "\\\\cap011svm\\mwPremierFarnellProd\\EMEABI\\EUR_PF_AnalyticsEngine_VendavoDet*.gz",
 			"userId": "sysazacct@avnet.com",
 			"password": {
 				"type": "AzureKeyVaultSecret",
@@ -21,5 +20,6 @@
 			"referenceName": "SHIREU1",
 			"type": "IntegrationRuntimeReference"
 		}
-	}
+	},
+	"type": "Microsoft.DataFactory/factories/linkedservices"
 }
