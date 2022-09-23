@@ -17,7 +17,11 @@
 				"typeProperties": {
 					"dataset": {
 						"referenceName": "PF_EMEA_binary_file_with_parameter",
-						"type": "DatasetReference"
+						"type": "DatasetReference",
+						"parameters": {
+							"File_path": "/",
+							"File_name": "EUR_PF_AnalyticsEngine_VendavoDet*.gz"
+						}
 					},
 					"fieldList": [
 						"itemName",
