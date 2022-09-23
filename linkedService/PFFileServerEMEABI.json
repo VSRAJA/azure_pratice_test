@@ -5,7 +5,7 @@
 		"annotations": [],
 		"type": "FileServer",
 		"typeProperties": {
-			"host": "\\\\cap011svm\\mwPremierFarnellProd\\EMEABI\\EUR_PF_AnalyticsEngine_VendavoDet*.gz",
+			"host": "\\\\cap011svm\\mwPremierFarnellProd\\EMEABI\\",
 			"userId": "sysazacct@avnet.com",
 			"password": {
 				"type": "AzureKeyVaultSecret",
